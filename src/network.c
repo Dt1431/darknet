@@ -578,10 +578,20 @@ void free_detections(detection *dets, int n)
 
 float *network_predict_image(network *net, image im)
 {
+#ifdef NNPACK
+	nnp_initialize();
+	net->threadpool = pthreadpool_create(4);
+    image imr = letterbox_image_thread(im, net->w, net->h, net->threadpool);
+#else
     image imr = letterbox_image(im, net->w, net->h);
+#endif
     set_batch_network(net, 1);
     float *p = network_predict(net, imr.data);
     free_image(imr);
+#ifdef NNPACK
+	pthreadpool_destroy(net->threadpool);
+	nnp_deinitialize();
+#endif
     return p;
 }
 

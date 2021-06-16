@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#ifdef NNPACK
+#include <nnpack.h>
+#endif
 
 #ifdef GPU
     #define BLOCK 512
@@ -493,6 +496,9 @@ typedef struct network{
     float *output_gpu;
 #endif
 
+#ifdef NNPACK
+	pthreadpool_t threadpool;
+#endif
 } network;
 
 typedef struct {
@@ -692,11 +698,17 @@ void free_network(network *net);
 void set_batch_network(network *net, int b);
 void set_temp_network(network *net, float t);
 image load_image(char *filename, int w, int h, int c);
+#ifdef NNPACK
+image load_image_thread(char *filename, int w, int h, int c, pthreadpool_t threadpool);
+#endif
 image load_image_color(char *filename, int w, int h);
 image make_image(int w, int h, int c);
 image resize_image(image im, int w, int h);
 void censor_image(image im, int dx, int dy, int w, int h);
 image letterbox_image(image im, int w, int h);
+#ifdef NNPACK
+image letterbox_image_thread(image im, int w, int h, pthreadpool_t threadpool);
+#endif
 image crop_image(image im, int dx, int dy, int w, int h);
 image center_crop_image(image im, int w, int h);
 image resize_min(image im, int min);
